@@ -10,25 +10,35 @@ export default class ConstructionValidator {
    * Makes sure that either the options or publisher and subscriber are defined.
    * @param publisher A redis client that is set as a publisher
    * @param subscriber A redis client tha tis set as a subscriber
-   * @param options The client options for the redis client to allow RedisClients to be created
+   * @param options The client options for the redis client to allow RedisClients to be created.
+   * It will only be used if a publisher was not provided.  It has a default value of {"host": "127.0.0.1", "port": 4210}
    * @returns An array containing a valid publisher and subscriber
    */
   public validatePubSub(
     publisher: RedisClient | undefined,
     subscriber: RedisClient | undefined,
-    options: ClientOpts | undefined
+    options: ClientOpts = {
+      "host": "127.0.0.1",
+      "port": 4210
+    },
+    maxListeners: number = 30
   ) {
+    if (!(maxListeners && maxListeners > 0)) {
+      maxListeners = 30
+    } else {
+      maxListeners = Math.ceil(maxListeners)
+    }
     if (publisher) {
       if (subscriber) {
         // Since a publisher and subscriber were both provided,
-        // set the max number of jobs that can be taken by the listeners as 30
-        publisher.setMaxListeners(30)
-        subscriber.setMaxListeners(30)
+        // set the max number of jobs that can be taken by the listeners
+        publisher.setMaxListeners(maxListeners)
+        subscriber.setMaxListeners(maxListeners)
       } else {
         // Only a proper publisher was given
         subscriber = publisher.duplicate()
-        publisher.setMaxListeners(30)
-        subscriber.setMaxListeners(30)
+        publisher.setMaxListeners(maxListeners)
+        subscriber.setMaxListeners(maxListeners)
       }
     } else {
       if (!options) {
@@ -40,7 +50,7 @@ export default class ConstructionValidator {
         // If a valid publisher was not provided, but the options were,
         // create the RedisClients from the options.
         publisher = createClient(options) as RedisClient
-        publisher.setMaxListeners(30)
+        publisher.setMaxListeners(maxListeners)
         subscriber = publisher.duplicate() as RedisClient
       }
     }
