@@ -6,11 +6,12 @@ const redis_1 = require("redis");
  */
 class ConstructionValidator {
     /**
+     *
      * Makes sure that either the options or publisher and subscriber are defined.
      * @param publisher A redis client that is set as a publisher
      * @param subscriber A redis client tha tis set as a subscriber
-     * @param options The client options for the redis client to allow RedisClients to be created.
-     * It will only be used if a publisher was not provided.  It has a default value of {"host": "127.0.0.1", "port": 4210}
+     * @param [options] The client options for the redis client to allow RedisClients to be created. It will only be used if a publisher was not provided.  It has a default value of {"host": "127.0.0.1", "port": 4210}
+     * @param [maxListeners] The max number of listeners for the publisher and subscriber.  Has a default value of 30
      * @returns An array containing a valid publisher and subscriber
      */
     validatePubSub(publisher, subscriber, options = {
